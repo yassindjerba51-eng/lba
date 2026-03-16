@@ -1,0 +1,16 @@
+{
+  "Index": {
+    "title": "Bienvenue au Cabinet d'Avocats",
+    "description": "Services juridiques professionnels multilingues en anglais, français et arabe."
+  },
+  "Navigation": {
+    "home": "Accueil",
+    "about": "Le Cabinet",
+    "practice_areas": "Compétences",
+    "services": "Services",
+    "news": "Actualités",
+    "team": "Notre équipe",
+    "contact": "Contact",
+    "book_appointment": "Prendre rendez-vous"
+  }
+}

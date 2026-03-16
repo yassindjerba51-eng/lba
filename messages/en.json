@@ -1,0 +1,16 @@
+{
+  "Index": {
+    "title": "Welcome to Our Law Firm",
+    "description": "Professional multi-lingual legal services in English, French, and Arabic."
+  },
+  "Navigation": {
+    "home": "Home",
+    "about": "The Firm",
+    "practice_areas": "Practice Areas",
+    "services": "Services",
+    "news": "News",
+    "team": "Our Team",
+    "contact": "Contact",
+    "book_appointment": "Book Appointment"
+  }
+}

@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// NEXTAUTH MODELS (Auth.js Standard)
+// -----------------------------------------------------------------------------
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(ADMIN)
+  accounts      Account[]
+  sessions      Session[]
+  articles      Article[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+// -----------------------------------------------------------------------------
+// APP MODELS: Articles, Services, Appointments, Inquiries
+// -----------------------------------------------------------------------------
+
+model Service {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            Json
+  menuName        Json?    // Short name for navigation menu
+  description     Json
+  subtitle        Json?
+  metaTitle       Json?
+  metaDescription Json?
+  content         Json?
+  icon            String?
+  featuredImage   String?
+  headerImage     String?
+  isActive        Boolean  @default(true)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  appointments Appointment[]
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       Json
+  content     Json
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  date      DateTime
+  status    AppointmentStatus @default(PENDING)
+  notes     String?           @db.Text
+
+  // Optional linkage to a Specific Service
+  serviceId String?
+  service   Service?          @relation(fields: [serviceId], references: [id])
+
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model Inquiry {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String        @db.Text
+  status    InquiryStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+  REPLIED
+}
+
+model GlobalSetting {
+  id        String   @id @default("global")
+  logo      String?
+  siteName  String?
+  address   String?  @db.Text
+  phone     String?
+  fax       String?
+  email     String?
+  website   String?
+  facebook  String?
+  instagram String?
+  linkedin  String?
+  youtube   String?
+  x         String?
+  // SMTP Settings
+  smtpSenderEmail String?
+  smtpSenderName  String?
+  smtpHost        String?
+  smtpPort        String?
+  smtpLogin       String?
+  smtpPassword    String?
+  competencePageSettings Json? // {"title": {...}, "subtitle": {...}, "headerImage": "..."}
+  teamPageSettings       Json? // {"title": {...}, "subtitle": {...}, "headerImage": "...", "metaTitle": {...}, "metaDescription": {...}}
+  // Hero settings
+  heroMode  String?  @default("slideshow") // "slideshow" or "video"
+  heroVideo String?  // path to uploaded video file
+  // News page settings
+  newsHeaderImage String?  // header background for the news page
+  // About section settings
+  aboutSection Json?  // {"subtitle": {...}, "title": {...}, "description": {...}, "image": "...", "highlights": [...]}
+  // CTA section settings
+  ctaSection Json?  // {"subtitle": {...}, "title": {...}, "description": {...}, "buttonText": {...}, "backgroundImage": "..."}
+  // Competences Preview (Nos Domaines d'Intervention) section settings
+  competencesPreview Json? // {"title": {...}, "subtitle": {...}, "buttonText": {...}, "buttonHref": {...}}
+  // News Preview (Dernières Actualités) section settings
+  newsPreview Json? // {"title": {...}, "subtitle": {...}, "buttonText": {...}, "buttonHref": {...}}
+  updatedAt DateTime @updatedAt
+}
+
+model TeamMember {
+  id              String   @id @default(uuid())
+  photo           String?
+  name            Json     // {"fr": "...", "en": "...", "ar": "..."}
+  role            Json     // {"fr": "...", "en": "...", "ar": "..."}
+  description     Json?    // {"fr": "...", "en": "...", "ar": "..."}
+  biography       Json     // {"fr": "...", "en": "...", "ar": "..."}
+  aboutMe         Json     // {"fr": "...", "en": "...", "ar": "..."}
+  skills          Json     // Array of skills: {"fr": ["..."], "en": ["..."], "ar": ["..."]}
+  experienceYears Int      @default(0)
+  phone           String?
+  email           String?
+  socialLinks     Json?    // {"linkedin": "...", "twitter": "...", "facebook": "..."}
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Page {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           Json     // {"fr": "...", "en": "...", "ar": "..."}
+  subtitle        Json?
+  metaTitle       Json?
+  metaDescription Json?
+  content         Json?    // WYSIWYG content per locale
+  featuredImage   String?
+  headerImage     String?
+  sliderCta       Json?    // CTA overlay config for homepage slider
+  isActive        Boolean  @default(true)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model HeroSlide {
+  id        String   @id @default(cuid())
+  image     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model HomepageFeature {
+  id          String   @id @default(cuid())
+  icon        String   @default("Star")  // Lucide icon name
+  title       Json     // {"fr": "...", "en": "...", "ar": "..."}
+  description Json     // {"fr": "...", "en": "...", "ar": "..."}
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model NewsCategory {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        Json     // {"fr": "...", "en": "...", "ar": "..."}
+  headerImage String?  // image for category header background
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  articles    NewsArticle[]
+}
+
+model NewsArticle {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           Json          // {"fr": "...", "en": "...", "ar": "..."}
+  excerpt         Json?         // {"fr": "...", "en": "...", "ar": "..."}
+  content         Json?         // WYSIWYG per locale
+  metaTitle       Json?
+  metaDescription Json?
+  featuredImage   String?
+  categoryId      String?
+  category        NewsCategory? @relation(fields: [categoryId], references: [id])
+  isActive        Boolean       @default(true)
+  publishedAt     DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Competence {
+  id          String   @id @default(cuid())
+  icon        String   @default("Star")
+  image       String?  // Cover image for the competence card/page
+  slug        Json?    // {"fr": "...", "en": "...", "ar": "..."}
+  title       Json     // {"fr": "...", "en": "...", "ar": "..."}
+  description Json     // {"fr": "...", "en": "...", "ar": "..."}
+  content     Json?    // Detailed text/HTML content {"fr": "...", "en": "...", "ar": "..."}
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Language {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  flag      String   @default("")
+  dir       String   @default("ltr")
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Translation {
+  id           String   @id @default(cuid())
+  namespace    String   // e.g. "Navigation", "Index"
+  key          String   // e.g. "home", "title"
+  translations Json     // {"fr": "Accueil", "en": "Home", ...}
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([namespace, key])
+}
