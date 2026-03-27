@@ -1,18 +1,23 @@
 "use client";
 
 import { Facebook, Linkedin, Link2, Twitter } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Props {
   title: string;
   slug: string;
   locale: string;
+  shareLabel?: string;
 }
 
-export default function SocialShare({ title, slug, locale }: Props) {
+export default function SocialShare({ title, slug, locale, shareLabel }: Props) {
   const [copied, setCopied] = useState(false);
+  const [url, setUrl] = useState("");
 
-  const url = typeof window !== "undefined" ? window.location.href : "";
+  useEffect(() => {
+    setUrl(window.location.href);
+  }, []);
+
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
@@ -46,7 +51,7 @@ export default function SocialShare({ title, slug, locale }: Props) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-slate-400 mr-1">
-        {locale === "ar" ? "مشاركة" : locale === "en" ? "Share" : "Partager"} :
+        {shareLabel || (locale === "ar" ? "مشاركة" : locale === "en" ? "Share" : "Partager")} :
       </span>
       {shareLinks.map((link) => (
         <a

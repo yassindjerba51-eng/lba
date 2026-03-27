@@ -4,10 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft, Calendar, Tag, Facebook, Linkedin, ChevronRight } from "lucide-react";
 import SocialShare from "./SocialShare";
+import { getMessagesForLocale } from "@/app/actions/translations";
 
 export default async function NewsArticlePage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
-  const article = await getNewsArticleBySlug(slug);
+  const [article, messages] = await Promise.all([
+    getNewsArticleBySlug(slug),
+    getMessagesForLocale(locale)
+  ]);
 
   if (!article || !article.isActive) notFound();
 
@@ -15,8 +19,8 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ lo
   const content = article.content ? ((article.content as Record<string, string>)[locale] || (article.content as Record<string, string>).fr || "") : "";
   const categoryName = article.category ? ((article.category.name as Record<string, string>)[locale] || (article.category.name as Record<string, string>).fr || "") : "";
 
-  const newsLabel = locale === "ar" ? "الأخبار" : locale === "en" ? "News" : "Actualités";
-  const homeLabel = locale === "ar" ? "الرئيسية" : locale === "en" ? "Home" : "Accueil";
+  const newsLabel = messages.Navigation?.news || "Actualités";
+  const homeLabel = messages.Navigation?.home || "Accueil";
 
   return (
     <div className="min-h-screen bg-white">
@@ -45,11 +49,10 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ lo
               </span>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">{title}</h1>
-            {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 text-sm text-slate-400">
-              <Link href="/" className="hover:text-white transition-colors">{homeLabel}</Link>
+              <Link href={`/${locale}`} className="hover:text-white transition-colors">{homeLabel}</Link>
               <ChevronRight className="h-3.5 w-3.5" />
-              <Link href="/news" className="hover:text-white transition-colors">{newsLabel}</Link>
+              <Link href={`/${locale}/news`} className="hover:text-white transition-colors">{newsLabel}</Link>
               <ChevronRight className="h-3.5 w-3.5" />
               <span className="text-slate-200 truncate max-w-[300px]">{title}</span>
             </nav>
@@ -62,9 +65,9 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ lo
         {/* Social sharing + back */}
         <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-100">
           <Button asChild variant="ghost" size="sm" className="gap-1 text-slate-500 hover:text-primary">
-            <Link href="/news"><ArrowLeft className="h-4 w-4" /> {locale === "ar" ? "العودة" : locale === "en" ? "Back to News" : "Retour aux actualités"}</Link>
+            <Link href={`/${locale}/news`}><ArrowLeft className="h-4 w-4" /> {messages.Navigation?.back_to_news || "Retour aux actualités"}</Link>
           </Button>
-          <SocialShare title={title} slug={slug} locale={locale} />
+          <SocialShare title={title} slug={slug} locale={locale} shareLabel={messages.Navigation?.share} />
         </div>
 
         <article

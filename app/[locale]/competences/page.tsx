@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCompetences, getCompetencePageSettings } from '@/app/actions/competences';
+import { getMessagesForLocale } from '@/app/actions/translations';
 import Link from 'next/link';
 import { Home, ChevronRight, Share2, Facebook, Linkedin } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
@@ -21,8 +22,11 @@ function DynamicIcon({ name, className }: { name: string; className?: string }) 
 export default async function CompetencesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Navigation' });
-  const competences = await getCompetences();
-  const pageSettings = await getCompetencePageSettings();
+  const [competences, pageSettings, messages] = await Promise.all([
+    getCompetences(),
+    getCompetencePageSettings(),
+    getMessagesForLocale(locale)
+  ]);
 
   const pageTitle = pageSettings.title?.[locale] || pageSettings.title?.fr || t('practice_areas');
   const pageSubtitle = pageSettings.subtitle?.[locale] || pageSettings.subtitle?.fr || '';
@@ -50,7 +54,7 @@ export default async function CompetencesPage({ params }: { params: Promise<{ lo
           <nav className="flex items-center justify-center gap-2 text-sm text-slate-400 mt-6">
             <Link href={`/${locale}`} className="flex items-center gap-1 hover:text-white transition-colors">
               <Home className="h-3.5 w-3.5" />
-              {locale === 'ar' ? 'الرئيسية' : 'Accueil'}
+              {messages.Navigation?.home || "Accueil"}
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <span className="text-white">{pageTitle}</span>
@@ -64,6 +68,7 @@ export default async function CompetencesPage({ params }: { params: Promise<{ lo
           title={pageTitle}
           slug="competences"
           locale={locale}
+          shareLabel={messages.Navigation?.share}
         />
       </div>
 

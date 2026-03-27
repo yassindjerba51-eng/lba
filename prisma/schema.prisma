@@ -177,17 +177,19 @@ model GlobalSetting {
   competencesPreview Json? // {"title": {...}, "subtitle": {...}, "buttonText": {...}, "buttonHref": {...}}
   // News Preview (Dernières Actualités) section settings
   newsPreview Json? // {"title": {...}, "subtitle": {...}, "buttonText": {...}, "buttonHref": {...}}
+  // Team Slider section settings
+  teamSliderSettings Json? // {"title": {...}, "subtitle": {...}, "buttonText": {...}, "backgroundColor": "#..."}
   updatedAt DateTime @updatedAt
 }
 
 model TeamMember {
   id              String   @id @default(uuid())
+  slug            String   @unique @default(cuid())
   photo           String?
   name            Json     // {"fr": "...", "en": "...", "ar": "..."}
   role            Json     // {"fr": "...", "en": "...", "ar": "..."}
   description     Json?    // {"fr": "...", "en": "...", "ar": "..."}
   biography       Json     // {"fr": "...", "en": "...", "ar": "..."}
-  aboutMe         Json     // {"fr": "...", "en": "...", "ar": "..."}
   skills          Json     // Array of skills: {"fr": ["..."], "en": ["..."], "ar": ["..."]}
   experienceYears Int      @default(0)
   phone           String?

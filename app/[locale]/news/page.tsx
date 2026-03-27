@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FileText, ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 export default async function NewsListPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -10,6 +11,7 @@ export default async function NewsListPage({ params }: { params: Promise<{ local
   const activeArticles = articles.filter((a) => a.isActive);
 
   const bannerImage = await getNewsHeaderImage();
+  const t = await getTranslations({ locale, namespace: 'Navigation' });
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -26,7 +28,7 @@ export default async function NewsListPage({ params }: { params: Promise<{ local
         )}
         <div className="relative container mx-auto px-4 md:px-8 text-center py-20">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            {locale === "ar" ? "الأخبار" : locale === "en" ? "News" : "Actualités"}
+            {t("news")}
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             {locale === "ar" ? "آخر الأخبار والتحديثات القانونية" : locale === "en" ? "Latest legal news and updates" : "Les dernières actualités et mises à jour juridiques"}

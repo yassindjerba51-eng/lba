@@ -7,11 +7,14 @@ import { getHeroSlides, getSliderCta, getHeroSettings } from '@/app/actions/slid
 import { getHomepageFeatures } from '@/app/actions/features';
 import { getLatestNewsArticles } from '@/app/actions/news';
 import { getNewsPreviewSection } from '@/app/actions/newsPreview';
+import { getTeamSliderSettings } from '@/app/actions/teamSliderSettings';
+import { getActiveTeamMembers } from '@/app/actions/team';
 import HeroSlider from '@/components/HeroSlider';
 import FeatureCarousel from '@/components/FeatureCarousel';
 import AboutSection from '@/components/AboutSection';
 import CtaSection from '@/components/CtaSection';
 import CompetencesPreviewSection from '@/components/CompetencesPreviewSection';
+import TeamSliderSection from '@/components/TeamSliderSection';
 import LatestNewsCarousel from '@/components/LatestNewsCarousel';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -24,6 +27,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const features = await getHomepageFeatures();
   const latestArticles = await getLatestNewsArticles(5);
   const newsPreviewData = await getNewsPreviewSection();
+  const teamSliderData = await getTeamSliderSettings();
+  const teamMembers = await getActiveTeamMembers();
 
   const showHero = (heroSettings.heroMode === "video" && heroSettings.heroVideo) || (heroSettings.heroMode === "slideshow" && slides.length > 0);
 
@@ -82,6 +87,21 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       {/* Aperçu Compétences */}
       <CompetencesPreviewSection locale={locale} />
+
+      {/* Team Slider */}
+      {teamMembers.length > 0 && (
+        <TeamSliderSection
+          members={teamMembers.map((m) => ({
+            id: m.id,
+            photo: m.photo,
+            name: m.name,
+            role: m.role,
+            socialLinks: m.socialLinks,
+          }))}
+          settings={teamSliderData}
+          locale={locale}
+        />
+      )}
 
       {/* Actualités */}
       {latestArticles.length > 0 && (

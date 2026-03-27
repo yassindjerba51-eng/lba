@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Home, ChevronRight } from "lucide-react";
 import SocialShare from "@/app/[locale]/news/[slug]/SocialShare";
+import { getMessagesForLocale } from "@/app/actions/translations";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
@@ -23,7 +24,7 @@ import { SlugMapSetter } from "@/components/SlugMapSetter";
 
 export default async function CompetenceDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
-  const t = await getTranslations({ locale, namespace: "Navigation" });
+  const messages = await getMessagesForLocale(locale);
 
   const allCompetences = await prisma.competence.findMany({ where: { isActive: true } });
   const competence = allCompetences.find(c => {
@@ -59,11 +60,11 @@ export default async function CompetenceDetailPage({ params }: { params: Promise
           <nav className="flex items-center justify-center gap-2 text-sm text-slate-300">
             <Link href={`/${locale}`} className="flex items-center gap-1 hover:text-white transition-colors">
               <Home className="h-3.5 w-3.5" />
-              {locale === "ar" ? "الرئيسية" : "Accueil"}
+              {messages.Navigation?.home || "Accueil"}
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <Link href={`/${locale}/competences`} className="hover:text-white transition-colors">
-              {t("practice_areas")}
+              {messages.Navigation?.practice_areas || "Compétences"}
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <span className="text-white font-medium">{title}</span>
@@ -76,6 +77,7 @@ export default async function CompetenceDetailPage({ params }: { params: Promise
            title={title} 
            slug={`competences/${competence.slug || competence.id}`} 
            locale={locale} 
+           shareLabel={messages.Navigation?.share}
          />
       </div>
 

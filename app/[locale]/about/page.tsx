@@ -1,7 +1,10 @@
 import { getTranslations } from 'next-intl/server';
-import { Card, CardContent } from '@/components/ui/card';
-import { Scale, Users, Trophy, Target } from 'lucide-react';
+import { Scale, Users, Trophy, Target, Home, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import SocialShare from '@/app/[locale]/news/[slug]/SocialShare';
+import { getMessagesForLocale } from '@/app/actions/translations';
+import { getAboutSection } from '@/app/actions/about';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -11,18 +14,56 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale });
+  const [messages, aboutData] = await Promise.all([
+    getMessagesForLocale(locale),
+    getAboutSection()
+  ]);
+
+  const pageTitle = messages.Navigation?.about || "Le Cabinet";
+  const pageSubtitle = aboutData.subtitle?.[locale] || aboutData.subtitle?.fr || "";
+  const headerImage = "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80";
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Header */}
-      <section className="relative py-20 bg-slate-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-20" />
-        <div className="container relative z-10 mx-auto px-4 md:px-8 text-center max-w-4xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Our History & Values</h1>
-          <p className="text-lg md:text-xl text-slate-300 font-light">Founded on the principles of integrity and exceptional service, we have been defending our clients' rights since 2005.</p>
+    <div className="flex flex-col w-full bg-slate-50 min-h-screen">
+      {/* Hero Header like Compétences */}
+      <div
+        className="relative bg-slate-900 overflow-hidden"
+        style={{
+          marginTop: "-88px",
+          paddingTop: "88px",
+          backgroundImage: `url(${headerImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-900/80" />
+        <div className="container mx-auto px-4 md:px-8 text-center relative z-10 py-20">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{pageTitle}</h1>
+          {pageSubtitle && (
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">{pageSubtitle}</p>
+          )}
+
+          {/* Breadcrumbs */}
+          <nav className="flex items-center justify-center gap-2 text-sm text-slate-400 mt-6">
+            <Link href={`/${locale}`} className="flex items-center gap-1 hover:text-white transition-colors">
+              <Home className="h-3.5 w-3.5" />
+              {messages.Navigation?.home || "Accueil"}
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5" />
+            <span className="text-white">{pageTitle}</span>
+          </nav>
         </div>
-      </section>
+      </div>
+
+      {/* Social Sharing */}
+      <div className="container mx-auto px-4 md:px-8 pt-6 flex justify-end">
+        <SocialShare
+          title={pageTitle}
+          slug="about"
+          locale={locale}
+          shareLabel={messages.Navigation?.share}
+        />
+      </div>
 
       {/* Content */}
       <section className="py-20 bg-white">

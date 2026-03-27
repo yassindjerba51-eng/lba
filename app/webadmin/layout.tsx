@@ -14,8 +14,8 @@ export default function WebAdminRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className + " bg-slate-100 min-h-screen"}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className + " bg-slate-100 min-h-screen"} suppressHydrationWarning>
         {children}
       </body>
     </html>

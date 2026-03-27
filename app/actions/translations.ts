@@ -16,13 +16,29 @@ const DEFAULT_TRANSLATIONS: { namespace: string; key: string; translations: Reco
   { namespace: "Navigation", key: "news", translations: { fr: "Actualités", en: "News", ar: "الأخبار" } },
   { namespace: "Navigation", key: "contact", translations: { fr: "Contact", en: "Contact", ar: "اتصل بنا" } },
   { namespace: "Navigation", key: "book_appointment", translations: { fr: "Prendre rendez-vous", en: "Book Appointment", ar: "حجز موعد" } },
+  { namespace: "Navigation", key: "share", translations: { fr: "Partager", en: "Share", ar: "مشاركة" } },
+  { namespace: "Navigation", key: "back_to_news", translations: { fr: "Retour aux actualités", en: "Back to News", ar: "العودة إلى الأخبار" } },
+  // Team namespace
+  { namespace: "Team", key: "greeting", translations: { fr: "Bonjour, je suis", en: "Hello, I am", ar: "مرحباً، أنا" } },
+  { namespace: "Team", key: "biography", translations: { fr: "Biographie Professionnelle", en: "Professional Biography", ar: "السيرة المهنية" } },
+  { namespace: "Team", key: "expertise", translations: { fr: "Domaines d'Expertise", en: "Areas of Expertise", ar: "مجالات الخبرة" } },
+  { namespace: "Team", key: "contact", translations: { fr: "Coordonnées", en: "Get in Touch", ar: "تواصل معي" } },
+  { namespace: "Team", key: "quickFacts", translations: { fr: "Informations Clés", en: "Quick Facts", ar: "معلومات سريعة" } },
+  { namespace: "Team", key: "experience", translations: { fr: "Années d'expérience", en: "Years of Experience", ar: "سنوات الخبرة" } },
+  { namespace: "Team", key: "practiceAreas", translations: { fr: "Domaines de pratique", en: "Practice Areas", ar: "مجالات الممارسة" } },
+  { namespace: "Team", key: "specialties", translations: { fr: "Spécialités", en: "Specialties", ar: "التخصصات" } },
+  { namespace: "Team", key: "phone", translations: { fr: "Téléphone", en: "Phone", ar: "هاتف" } },
+  { namespace: "Team", key: "cta", translations: { fr: "Prendre rendez-vous", en: "Schedule a Consultation", ar: "حجز استشارة" } },
+  { namespace: "Team", key: "ctaSubtext", translations: { fr: "Contactez-nous pour discuter de votre dossier", en: "Contact us to discuss your case", ar: "اتصل بنا لمناقشة قضيتك" } },
 ];
 
-/** Auto-seed default translations if the table is empty */
+/** Auto-seed missing translations */
 async function seedIfEmpty() {
-  const count = await prisma.translation.count();
-  if (count === 0) {
-    for (const t of DEFAULT_TRANSLATIONS) {
+  const existing = await prisma.translation.findMany({ select: { namespace: true, key: true } });
+  const existingSet = new Set(existing.map(t => `${t.namespace}:${t.key}`));
+
+  for (const t of DEFAULT_TRANSLATIONS) {
+    if (!existingSet.has(`${t.namespace}:${t.key}`)) {
       await prisma.translation.create({
         data: {
           namespace: t.namespace,

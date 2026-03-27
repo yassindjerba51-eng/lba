@@ -39,6 +39,7 @@ export default function Navbar({ services = [], logo, languages }: NavbarProps) 
   const locale = useLocale();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
 
   // Helper to prefix paths with the current locale
   const localePath = (path: string) => `/${locale}${path === '/' ? '' : path}`;
@@ -55,7 +56,6 @@ export default function Navbar({ services = [], logo, languages }: NavbarProps) 
   }, []);
 
   const navLinks = [
-    { href: "/", label: t("home") },
     { href: "/about", label: t("about") },
     { href: "/competences", label: t("practice_areas") },
     { href: "/team", label: t("team") },
@@ -200,18 +200,29 @@ export default function Navbar({ services = [], logo, languages }: NavbarProps) 
                         {link.label}
                       </Link>
                       {link.href === "/competences" && services.length > 0 && (
-                        <div className="pl-4 mt-3 flex flex-col gap-3 border-l-2 border-primary/20 ml-2 rtl:pl-0 rtl:pr-4 rtl:ml-0 rtl:mr-2 rtl:border-l-0 rtl:border-r-2">
-                          <span className="text-sm font-bold text-white/50 uppercase tracking-wider">{t("services")}</span>
-                          {services.map((service) => (
-                            <Link 
-                              key={service.slug} 
-                              href={localePath(`/services/${service.slug}`)} 
-                              className="text-white/60 hover:text-primary transition-colors text-sm"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              {getServiceName(service)}
-                            </Link>
-                          ))}
+                        <div className="mt-4 flex flex-col gap-3">
+                          <button 
+                            onClick={() => setIsServicesOpen(!isServicesOpen)}
+                            className="flex items-center justify-between w-full text-lg font-medium transition-colors hover:text-primary text-white/70"
+                          >
+                            <span>{t("services")}</span>
+                            <span className="text-2xl leading-none font-light">{isServicesOpen ? "−" : "+"}</span>
+                          </button>
+                          
+                          {isServicesOpen && (
+                            <div className="pl-4 flex flex-col gap-4 border-l-2 border-primary/20 ml-2 rtl:pl-0 rtl:pr-4 rtl:ml-0 rtl:mr-2 rtl:border-l-0 rtl:border-r-2 mt-2">
+                              {services.map((service) => (
+                                <Link 
+                                  key={service.slug} 
+                                  href={localePath(`/services/${service.slug}`)} 
+                                  className="text-white/60 hover:text-primary transition-colors text-base"
+                                  onClick={() => setIsOpen(false)}
+                                >
+                                  {getServiceName(service)}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

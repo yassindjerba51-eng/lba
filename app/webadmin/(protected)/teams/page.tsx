@@ -4,6 +4,7 @@ import TeamPageHeaderForm from "./components/TeamPageHeaderForm";
 import { Users, Plus, LayoutGrid, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
 export default async function TeamsAdminPage() {
@@ -33,26 +34,28 @@ export default async function TeamsAdminPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="list" className="w-full space-y-6">
-        <TabsList className="bg-white border p-1 h-auto w-fit">
-          <TabsTrigger value="list" className="gap-2 px-6 py-2 data-[state=active]:bg-slate-100 data-[state=active]:shadow-none">
-            <LayoutGrid className="h-4 w-4" /> Liste des membres
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="gap-2 px-6 py-2 data-[state=active]:bg-slate-100 data-[state=active]:shadow-none">
-            <Settings2 className="h-4 w-4" /> Page Publique & SEO
-          </TabsTrigger>
-        </TabsList>
+      <Card className="shadow-sm border-slate-200">
+        <CardContent className="pt-6">
+          <Tabs defaultValue="list" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="list" className="gap-1.5 text-xs sm:text-sm">
+                <LayoutGrid className="h-4 w-4 hidden sm:block" /> Liste des membres
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm">
+                <Settings2 className="h-4 w-4 hidden sm:block" /> Page Publique &amp; SEO
+              </TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="list" className="mt-0 outline-none">
-          <TeamList members={members} />
-        </TabsContent>
+            <TabsContent value="list" className="mt-0 outline-none">
+              <TeamList members={members} />
+            </TabsContent>
 
-        <TabsContent value="settings" className="mt-0 outline-none">
-          <div className="max-w-4xl">
-            <TeamPageHeaderForm settings={pageSettings} />
-          </div>
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="settings" className="mt-0 outline-none">
+              <TeamPageHeaderForm settings={pageSettings} ctaBannerSettings={pageSettings.ctaBanner} />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }

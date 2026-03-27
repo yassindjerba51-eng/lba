@@ -15,12 +15,12 @@ import { Switch } from "@/components/ui/switch";
 
 interface TeamMemberData {
   id?: string;
+  slug: string;
   photo?: string | null;
   name: Record<string, string>;
   role: Record<string, string>;
   description?: Record<string, string>;
   biography: Record<string, string>;
-  aboutMe: Record<string, string>;
   skills: Record<string, string>; // Stored as comma-separated string per locale for simplicity in form
   experienceYears: number;
   phone?: string | null;
@@ -45,11 +45,11 @@ export default function TeamMemberForm({ member }: Props) {
   const localeFlags: Record<string, string> = Object.fromEntries(languages.map((l) => [l.code, l.flag]));
 
   // Form state
-  const [name, setName] = useState<Record<string, string>>(member?.name || { fr: "", en: "", ar: "" });
-  const [role, setRole] = useState<Record<string, string>>(member?.role || { fr: "", en: "", ar: "" });
+  const [slug, setSlug] = useState(member?.slug || "");
+  const [name, setName] = useState(typeof member?.name === 'object' ? (member.name.fr || Object.values(member.name)[0] || "") : "");
+  const [role, setRole] = useState(typeof member?.role === 'object' ? (member.role.fr || Object.values(member.role)[0] || "") : "");
   const [description, setDescription] = useState<Record<string, string>>(member?.description || { fr: "", en: "", ar: "" });
   const [biography, setBiography] = useState<Record<string, string>>(member?.biography || { fr: "", en: "", ar: "" });
-  const [aboutMe, setAboutMe] = useState<Record<string, string>>(member?.aboutMe || { fr: "", en: "", ar: "" });
   
   // To keep form simple, we edit skills as a comma-separated list of strings per locale
   const initialSkills: Record<string, string> = {};
@@ -91,12 +91,12 @@ export default function TeamMemberForm({ member }: Props) {
   async function handleSubmit() {
     setMessage(null);
     
-    if (!name.fr) {
-      setMessage({ type: "error", text: "Le nom (Français) est requis." });
+    if (!name) {
+      setMessage({ type: "error", text: "Le nom est requis." });
       return;
     }
-    if (!role.fr) {
-      setMessage({ type: "error", text: "La fonction (Français) est requise." });
+    if (!role) {
+      setMessage({ type: "error", text: "La fonction est requise." });
       return;
     }
 
@@ -109,11 +109,11 @@ export default function TeamMemberForm({ member }: Props) {
     const socialLinks = { linkedin, twitter, facebook };
 
     const fd = new FormData();
-    fd.append("name", JSON.stringify(name));
-    fd.append("role", JSON.stringify(role));
+    fd.append("slug", slug);
+    fd.append("name", JSON.stringify({ fr: name, en: name, ar: name }));
+    fd.append("role", JSON.stringify({ fr: role, en: role, ar: role }));
     fd.append("description", JSON.stringify(description));
     fd.append("biography", JSON.stringify(biography));
-    fd.append("aboutMe", JSON.stringify(aboutMe));
     fd.append("skills", JSON.stringify(formattedSkills));
     fd.append("experienceYears", experienceYears);
     fd.append("phone", phone);
@@ -172,10 +172,41 @@ export default function TeamMemberForm({ member }: Props) {
           <Card>
             <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" /> Informations multilingues
+                <Users className="h-5 w-5 text-primary" /> Informations de profil
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
+              {/* Slug and Basic Info Section */}
+              <div className="space-y-4 mb-6 pb-6 border-b border-slate-100">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1 block">Nom Complet *</label>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Ex: Jean Dupont" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1 block">Fonction / Rôle *</label>
+                    <Input value={role} onChange={(e) => setRole(e.target.value)} required placeholder="Ex: Avocat associé" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block italic text-slate-500">
+                    Slug d'URL (Lien vers la page de détails)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">/team/</span>
+                    <Input 
+                      value={slug} 
+                      onChange={(e) => setSlug(e.target.value)} 
+                      placeholder="laissez vide pour générer automatiquement" 
+                      className="bg-slate-50"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Le slug est utilisé pour l'URL de la page (ex: /team/sami-alouani). S'il est modifié, les anciens liens seront rompus.
+                  </p>
+                </div>
+              </div>
+
               <Tabs defaultValue={locales[0] || "fr"} className="w-full">
                 <TabsList style={{ display: 'grid', gridTemplateColumns: `repeat(${locales.length}, 1fr)` }} className="w-full mb-6">
                   {locales.map((code) => (
@@ -189,16 +220,6 @@ export default function TeamMemberForm({ member }: Props) {
                   const dir = (languages.find((l) => l.code === loc)?.dir as "ltr" | "rtl") || "ltr";
                   return (
                     <TabsContent key={loc} value={loc} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-slate-700 mb-1 block">Nom Complet *</label>
-                          <Input dir={dir} value={name[loc] || ""} onChange={(e) => updateField(setName, loc, e.target.value)} required />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-slate-700 mb-1 block">Fonction / Rôle *</label>
-                          <Input dir={dir} value={role[loc] || ""} onChange={(e) => updateField(setRole, loc, e.target.value)} required />
-                        </div>
-                      </div>
 
                       <div>
                         <label className="text-sm font-medium text-slate-700 mb-1 block">Courte Description</label>
@@ -208,11 +229,6 @@ export default function TeamMemberForm({ member }: Props) {
                       <div>
                         <label className="text-sm font-medium text-slate-700 mb-1 block">Biographie</label>
                         <Textarea dir={dir} value={biography[loc] || ""} onChange={(e) => updateField(setBiography, loc, e.target.value)} rows={4} />
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium text-slate-700 mb-1 block">À propos de moi</label>
-                        <Textarea dir={dir} value={aboutMe[loc] || ""} onChange={(e) => updateField(setAboutMe, loc, e.target.value)} rows={4} />
                       </div>
 
                       <div>

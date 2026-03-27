@@ -14,6 +14,8 @@ import { getAboutSection } from "@/app/actions/about";
 import { getCtaSection } from "@/app/actions/cta";
 import { getCompetencesPreviewSection } from "@/app/actions/competencesPreview";
 import { getNewsPreviewSection } from "@/app/actions/newsPreview";
+import { getTeamSliderSettings } from "@/app/actions/teamSliderSettings";
+import TeamSliderManager from "./TeamSliderManager";
 
 export default async function HomepageAdminPage() {
   // Find or create the homepage page
@@ -42,6 +44,7 @@ export default async function HomepageAdminPage() {
   const newsPreviewData = await getNewsPreviewSection();
   const aboutData = await getAboutSection();
   const ctaData = await getCtaSection();
+  const teamSliderData = await getTeamSliderSettings();
 
   return (
     <div className="space-y-6 pb-10">
@@ -79,6 +82,9 @@ export default async function HomepageAdminPage() {
 
       {/* À propos de nous */}
       <AboutManager initialData={aboutData} />
+
+      {/* Team Slider */}
+      <TeamSliderManager settings={teamSliderData} />
 
       {/* Prendre rendez-vous (CTA) */}
       <CtaManager initialData={ctaData} />
